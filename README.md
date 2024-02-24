@@ -14,6 +14,8 @@ The button is used to start the flipping process and after the
 flipping the servos are deactivated by switching off the control
 line of the servos.
 
+<img src="doc/Schematic.png" alt="Schematic" width="80%"/>
+
 ## Software
 ### Arduino Nano version
 - [Arduino IDE](https://www.arduino.cc/en/main/software) (V 2.3.2)
