@@ -10,7 +10,7 @@ plateOuterDistance=28;
 HousingInnerHeight=25;
 HousingInnerWidth=92;
 HousingInnerLength=72;
-HousingRoundness=5;
+HousingRoundness=3;
 thickness=2;
 
 
@@ -21,32 +21,49 @@ foamThickness=2;
 $fs=0.5;
 $fa=2;
 
+// Screw positions
+screwXX=91/2-1.5;
+screwYY=70/2-1.5;
+pos=[
+[-(screwXX-1.2) ,(screwYY-1.9)],
+[(screwXX-3)    ,(screwYY-2.2)],
+[-(screwXX-2.5) ,-(screwYY-3.45)],
+[(screwXX-2.7)  ,-(screwYY-1.5)]];
+
+
+
 // Housing
 housing();
+//lid();
 
-// Plate support
-translate([-plateXX/2,-plateOuterDistance,0])cube([plateXX,2*plateOuterDistance,servoThickness/2-plateThickness-foamThickness]);
 
-// Servo mount
-servoMount();
-mirror([1,0,0]) servoMount();
-module servoMount(){
-    for(i=[-1,1])translate([servoOffset/2-7/2,i*servoScrewOffset/2+servoAxisOffset,servoThickness/2])difference(){
-        cube([7,servoScrewOffset-servoWidth-clearance,servoThickness],center=true);
-        rotate([0,90,0])cylinder(d=servoScrewDia,h=8,center=true);
+module housing() {
+    lowerHousing();
+    
+    // Plate support
+    translate([-plateXX/2,-plateOuterDistance,0])cube([plateXX,2*plateOuterDistance,servoThickness/2-plateThickness-foamThickness]);
+
+    // Servo mount
+    servoMount();
+    mirror([1,0,0]) servoMount();
+    module servoMount(){
+        for(i=[-1,1])translate([servoOffset/2-7/2,i*servoScrewOffset/2+servoAxisOffset,servoThickness/2])difference(){
+            cube([7,servoScrewOffset-servoWidth-clearance,servoThickness],center=true);
+            rotate([0,90,0])cylinder(d=servoScrewDia,h=8,center=true);
+        }
     }
 }
 
-module housing() {
-    xOffset=(HousingInnerWidth-(HousingRoundness-thickness))/2;
-    yOffset=(HousingInnerLength-(HousingRoundness-thickness))/2;
+module lowerHousing() {
+    xOffset=(HousingInnerWidth-(2*HousingRoundness-2*thickness))/2;
+    yOffset=(HousingInnerLength-(2*HousingRoundness-2*thickness))/2;
     PcbTop=-15;
     
     difference() {
-        hull() for(ix=[-1,1])for(iy=[-1,1])translate([ix*xOffset,iy*yOffset,-HousingInnerHeight])cylinder(d=HousingRoundness,h=HousingInnerHeight);
+        hull() for(ix=[-1,1])for(iy=[-1,1])translate([ix*xOffset,iy*yOffset,-HousingInnerHeight])cylinder(r=HousingRoundness,h=HousingInnerHeight);
         
         // inner
-        hull() for(ix=[-1,1])for(iy=[-1,1])translate([ix*xOffset,iy*yOffset,-HousingInnerHeight-thickness])cylinder(d=HousingRoundness-thickness,h=HousingInnerHeight);
+        hull() for(ix=[-1,1])for(iy=[-1,1])translate([ix*xOffset,iy*yOffset,-HousingInnerHeight-thickness])cylinder(r=HousingRoundness-thickness,h=HousingInnerHeight);
             
         // Servo cable holes
         for(ix=[-1,1])hull()for(yy=[0,10])translate([ix*(servoOffset/2+10),servoAxisOffset-servoWidth/2-3/2+yy,0])cylinder(d=3,h=thickness*3,center=true);
@@ -60,20 +77,44 @@ module housing() {
     }
     
     // screws
-    screwXX=91/2-1.5;
-    screwYY=70/2-1.5;
-    pos=[
-    [-(screwXX-1.2) ,(screwYY-1.9)],
-    [(screwXX-3)    ,(screwYY-2.2)],
-    [-(screwXX-2.5) ,-(screwYY-3.45)],
-    [(screwXX-2.7)  ,-(screwYY-1.5)]];
+    corners=[
+    [-xOffset ,yOffset],
+    [xOffset ,yOffset],
+    [-xOffset ,-yOffset],
+    [xOffset ,-yOffset]];
     for(i=[0:3])translate([pos[i][0],pos[i][1],PcbTop])difference(){
-        cylinder(d=6,h=-PcbTop-thickness);
+        hull(){
+            cylinder(d=6,h=-PcbTop-thickness);
+            translate([corners[i][0]-pos[i][0],corners[i][1]-pos[i][1],0])cylinder(r=HousingRoundness,h=-PcbTop-thickness);
+        }
         translate([0,0,-3])cylinder(d=3,h=-PcbTop-thickness);
     }
 }
 
-
+module lid() {
+    xOffset=(HousingInnerWidth-(2*HousingRoundness-2*thickness))/2;
+    yOffset=(HousingInnerLength-(2*HousingRoundness-2*thickness))/2;
+    PcbTop=-15;
+    
+    difference() {
+        union(){
+            hull() for(ix=[-1,1])for(iy=[-1,1])translate([ix*xOffset,iy*yOffset,-HousingInnerHeight])cylinder(r=HousingRoundness-thickness-clearance,h=thickness);
+                
+            // screw shaft
+            for(i=[0:3])intersection(){
+                translate([pos[i][0],pos[i][1],-HousingInnerHeight])cylinder(d=6+2*thickness,h=HousingInnerHeight+PcbTop-1.6);
+                
+                hull() for(ix=[-1,1])for(iy=[-1,1])translate([ix*xOffset,iy*yOffset,-HousingInnerHeight])cylinder(r=HousingRoundness-thickness-clearance,h=HousingInnerHeight);
+            }            
+        }
+        
+        // screws holes
+        for(i=[0:3])translate([pos[i][0],pos[i][1],-HousingInnerHeight-0.01]){
+            cylinder(d=6,h=HousingInnerHeight+PcbTop-1.6-thickness);
+            cylinder(d=3,h=HousingInnerHeight);
+        }
+    }
+}
 
 
 //plate();
