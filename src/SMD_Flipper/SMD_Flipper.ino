@@ -34,7 +34,7 @@ void setup() {
 }
 
 void loop() {
-  if (digitalRead(button_pin) == LOW) {
+  if (buttonPressedDebounced()) {
     // power servos
     pinMode(servo1_pin, OUTPUT);
     pinMode(servo2_pin, OUTPUT);
@@ -47,6 +47,15 @@ void loop() {
     pinMode(servo1_pin, INPUT_PULLUP);
     pinMode(servo2_pin, INPUT_PULLUP);
   }
+}
+
+bool buttonPressedDebounced() {
+  bool buttonPressed = (digitalRead(button_pin) == LOW);
+  for (uint8_t i=0; i<10; i++) {
+    delay(1);
+    buttonPressed = buttonPressed && (digitalRead(button_pin) == LOW);
+  }
+  return buttonPressed;
 }
 
 void goPos(uint16_t a,uint16_t b,uint16_t delayForMovement) {
