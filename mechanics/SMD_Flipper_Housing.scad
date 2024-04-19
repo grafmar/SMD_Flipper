@@ -35,6 +35,7 @@ pos=[
 // Housing
 housing();
 //lid();
+//lid(15); // 15mm enlarged
 
 
 module housing() {
@@ -91,27 +92,38 @@ module lowerHousing() {
     }
 }
 
-module lid() {
+module lid(enlargement=0) {
     xOffset=(HousingInnerWidth-(2*HousingRoundness-2*thickness))/2;
     yOffset=(HousingInnerLength-(2*HousingRoundness-2*thickness))/2;
     PcbTop=-15;
     
     difference() {
         union(){
-            hull() for(ix=[-1,1])for(iy=[-1,1])translate([ix*xOffset,iy*yOffset,-HousingInnerHeight])cylinder(r=HousingRoundness-thickness-clearance,h=thickness);
+            hull() for(ix=[-1,1])for(iy=[-1,1])translate([ix*xOffset,iy*yOffset,-HousingInnerHeight-enlargement])cylinder(r=HousingRoundness-thickness-clearance,h=thickness+enlargement);
                 
             // screw shaft
             for(i=[0:3])intersection(){
                 translate([pos[i][0],pos[i][1],-HousingInnerHeight])cylinder(d=6+2*thickness,h=HousingInnerHeight+PcbTop-1.6);
                 
-                hull() for(ix=[-1,1])for(iy=[-1,1])translate([ix*xOffset,iy*yOffset,-HousingInnerHeight])cylinder(r=HousingRoundness-thickness-clearance,h=HousingInnerHeight);
-            }            
+                hull() for(ix=[-1,1])for(iy=[-1,1])translate([ix*xOffset,iy*yOffset,-HousingInnerHeight])cylinder(r=HousingRoundness-thickness-clearance,h=HousingInnerHeight);                    
+            }
+            
+            // enlargement
+            if (enlargement>0.5) {
+                hull() for(ix=[-1,1])for(iy=[-1,1])translate([ix*xOffset,iy*yOffset,-HousingInnerHeight-enlargement])cylinder(r=HousingRoundness,h=enlargement-0.5);
+                
+            }
         }
         
         // screws holes
-        for(i=[0:3])translate([pos[i][0],pos[i][1],-HousingInnerHeight-0.01]){
-            cylinder(d=6,h=HousingInnerHeight+PcbTop-1.6-thickness);
-            cylinder(d=3,h=HousingInnerHeight);
+        for(i=[0:3])translate([pos[i][0],pos[i][1],-HousingInnerHeight-0.01-enlargement]){
+            cylinder(d=6,h=HousingInnerHeight+PcbTop-1.6-thickness+enlargement);
+            cylinder(d=3,h=HousingInnerHeight+enlargement);
+        }
+        
+        // magnet holes
+        for(ix=[-1,1])translate([ix*HousingInnerWidth*0.25,0,-HousingInnerHeight+1-enlargement]){
+            cylinder(d=15,h=HousingInnerHeight+PcbTop-1.6-thickness+enlargement);
         }
     }
 }
