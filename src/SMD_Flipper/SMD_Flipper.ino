@@ -23,6 +23,14 @@ void setup() {
   pinMode(servo1_pin, INPUT_PULLUP);
   pinMode(servo2_pin, INPUT_PULLUP);
   pinMode(button_pin, INPUT_PULLUP);
+
+  // power servos
+  pinMode(servo1_pin, OUTPUT);
+  pinMode(servo2_pin, OUTPUT);
+  goPos(0,0,800);
+  // unpower servos
+  pinMode(servo1_pin, INPUT_PULLUP);
+  pinMode(servo2_pin, INPUT_PULLUP);
 }
 
 void loop() {
@@ -31,6 +39,7 @@ void loop() {
     pinMode(servo1_pin, OUTPUT);
     pinMode(servo2_pin, OUTPUT);
     // do movement
+    goPos(0,0,100);
     goPos(0,180,400);
     goPos(180,0,400);
     goPos(0,0,400);
